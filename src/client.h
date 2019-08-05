@@ -3,8 +3,8 @@
 
 
 
-/*  最大系统命令个数为7个 */
-#define MAX_COMAND_NUM 7
+/*  最大系统命令个数为8个 */
+#define MAX_COMAND_NUM 8
 
 #define MCAST_ADDR "224.0.0.101"                    /* 一个局部连接多播地址，路由器不进行转发 */
 #define MCAST_DATA "scan request"                   /* 多播发送的数据 */
@@ -19,6 +19,7 @@
 */
 enum Message_Type
 {
+	Message_Tcp_Ls,
 	Message_Tcp_Download,
 	Message_Tcp_Upload,
 	Message_Udp_Download,
@@ -35,7 +36,8 @@ enum Sys_Command
 	Sys_Upload,
 	Sys_Scan,
 	Sys_Clear,
-	Sys_Quit
+	Sys_Quit,
+	Sys_Ls
 };
 
 
@@ -49,7 +51,7 @@ struct FileInfo
 	char HashCode[41];
 };
 
-/* MAX_COMAND_NUM个系统命令 help, connect, download, upload, scan，clear, quit */
+/* MAX_COMAND_NUM个系统命令 help, connect, download, upload, scan，clear, quit, ls */
 char SysCommand[MAX_COMAND_NUM][20];
 /*输入最多3个参数，每个参数19个字符以内，大小写无关 */
 char cmd[3][20];
@@ -65,6 +67,9 @@ int analysis(char* str);
 
 /* 帮助菜单信息打印 */
 void helpmenu();
+
+/* 打印服务端目录，显示可下载的文件 */
+void ls_func();
 
 
 

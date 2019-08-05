@@ -17,6 +17,7 @@ int UDP_TRANS_PORT = 19977;        		/* UDP传输端口 端口需要保证客户
 */
 enum Message_Type
 {
+	Message_Tcp_Ls,
 	Message_Tcp_Download,
 	Message_Tcp_Upload,
 	Message_Udp_Download,
@@ -77,6 +78,9 @@ void tcp_download_func(int sockfd, char msg[][BUFLEN]);
 
 /* 对UDP下载消息的处理函数 */
 void udp_download_func(int sockfd, struct sockaddr_in client_addr, char msg[][BUFLEN]);
+
+/* 显示目录内的文件发送给客户端 */
+void ls_file(int sockfd);
 
 #endif
 

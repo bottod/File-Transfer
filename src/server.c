@@ -446,7 +446,7 @@ void deal_tcp_recv_message(int sockfd, char* str)
     *  对于下载消息  分割str; m_list里存着msgtype，filename，fileset, hashcode 
     */
     char seg[] = ",";
-    char m_list[4][BUFLEN];
+    char m_list[4][BUFLEN] = {0};
     int i = 0;
     char *substr = strtok(str,seg);
     while(substr != NULL)
@@ -467,6 +467,11 @@ void deal_tcp_recv_message(int sockfd, char* str)
         case Message_Tcp_Download:
         {
             tcp_download_func(sockfd, m_list);
+            break;
+        }
+        case Message_Tcp_Ls:
+        {
+            ls_file(sockfd);
             break;
         }
         default:
@@ -815,5 +820,51 @@ void udp_download_func(int sockfd, struct sockaddr_in client_addr, char msg[][BU
         sendto(sockfd, "OK", 2, 0, (struct sockaddr*)&client_addr, sizeof(client_addr));
         printf("\033[1;32mSend complete! buf size = %dbytes\r\n\033[0m", sdCount);
         fclose(fp);
+    }
+}
+
+
+
+/* 对收到的ls命令处理 */
+void ls_file(int sockfd)
+{
+    DIR *dir;
+    struct dirent *ptr;
+
+    char response_ls[2 * BUFLEN] = {0};
+    strcpy(response_ls, "file_list: \r\n");
+    char default_response_ls[2 * BUFLEN];
+    strcpy(default_response_ls, "no file in download dir!!! \r\n");
+ 
+    if ((dir=opendir(g_place_of_file)) == NULL)
+    {
+        send(sockfd, default_response_ls, strlen(default_response_ls), 0);
+        return;
+    }
+ 
+    while ((ptr=readdir(dir)) != NULL)
+    {
+        if(strcmp(ptr->d_name,".")==0 || strcmp(ptr->d_name,"..")==0)    ///current dir OR parrent dir
+        {   
+            continue;
+        }
+        else if(ptr->d_type == 8)    ///file
+        {
+            sprintf(response_ls, "%s\r\n%s", response_ls, ptr->d_name);
+        }
+        else 
+        {
+            continue;
+        }
+    }
+    closedir(dir);
+
+    if(0 == strcmp(response_ls, "file_list: \r\n"))
+    {
+        send(sockfd, default_response_ls, strlen(default_response_ls), 0);
+    }
+    else
+    {
+        send(sockfd, response_ls, strlen(response_ls), 0);
     }
 }

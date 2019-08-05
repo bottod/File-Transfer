@@ -71,6 +71,9 @@ int main(int argc, char*argv)
             case Sys_Quit:
                 close(g_client_tcp_sockfd);
                 return 0;
+            case Sys_Ls:
+                ls_func();
+                break;
             case -1:
                 printf("Please Input At Least One Command!\r\n");
                 break;
@@ -103,6 +106,7 @@ void init_sys_command()
     strcpy(SysCommand[4], "scan");
     strcpy(SysCommand[5], "clear");
     strcpy(SysCommand[6], "quit");
+    strcpy(SysCommand[7], "ls");
 }
 
 
@@ -116,6 +120,7 @@ void helpmenu()
     upload      ---  upload to server; Usage: 'upload TCP/UDP filename'\r\n\
     scan        ---  scan online server; only can scan same segment\r\n\
     clear       ---  clear the screen \r\n\
+    ls          ---  show server dir;file you can download\r\n\
     quit        ---  exit this system\r\n\n\
     \033[1;32mall commands are Case-Insensitive\r\n\n\033[0m"
     );
@@ -976,4 +981,25 @@ int client_udp_download(char *filename)
     }
 
     return 0;
+}
+
+
+
+/* 显示服务端可下载的文件 */
+void ls_func()
+{
+    if(0 > g_client_tcp_sockfd)//检查tcp sockfd是否正常
+    {
+        printf("\033[1;31mPlease connect a server first!!!\r\n\033[0m");
+    }
+    else //tcp
+    {
+        char str[2 * BUFLEN] = {0};
+        sprintf(str, "%d,0", Message_Tcp_Ls);
+        //发送ls命令给服务端，格式为msg_type, 0
+        send(g_client_tcp_sockfd, str, strlen(str), 0);
+        //接收服务端回传的文件基本信息，格式为 is_exist,hashcode,filesize  对第一个参数 0:文件不存在 1：不续传 2：续传
+        recv(g_client_tcp_sockfd, str, 2 * BUFLEN, 0);
+        printf("%s\r\n",str);
+    }
 }
